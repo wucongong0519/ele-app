@@ -1,7 +1,7 @@
 <template>
   <div class="location">
      <div class="title">当前城市</div>
-     <div class="des">
+     <div class="des" @click="$emit('click')">
          <i class="fa fa-location-arrow"></i>
          <span>{{address}}</span>
      </div>

@@ -9,7 +9,7 @@
      </div>
      <div style="height:100%" v-if="searchlist.length === 0">
          <div class="location">
-           <Location :address = "city"/>
+           <Location :address = "city" @click="selectCity({name:city})"/>
          </div>
          <Alphabet @selectCity="selectCity" ref="allcity" :cityInfo = "cityInfo" :keys="keys"/>
      </div>

@@ -10,7 +10,7 @@
              <i class="fa fa-search"></i>
              <input type="text" v-model="search_val" placeholder="小区/写字楼/学校等">
          </div>
-         <Location :address="address"/>
+         <Location :address="address" @click="selectAddress"/>
      </div>
      <div class="area">
        <ul class="area_list" v-for="(item,index) in areaList" :key="index">
