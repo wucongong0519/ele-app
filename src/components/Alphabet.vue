@@ -51,7 +51,6 @@ export default {
       selectKey (index) {
           const citylist = this.$refs.area_scroll.getElementsByClassName('citylist')
           let el = citylist[index]
-          console.log(el)
           this.scroll.scrollToElement(el,300)
       }
   }

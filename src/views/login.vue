@@ -77,7 +77,7 @@ export default {
           phone: this.phone
         })
         .then(res => {
-          console.log(res);
+          // console.log(res);
         });
       }
     },

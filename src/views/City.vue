@@ -56,7 +56,6 @@ export default {
     getCityInfo () {
       this.$http('api/posts/cities')
       .then(res => {
-        console.log(res)
         this.cityInfo = res.data
         this.keys = Object.keys(res.data)
         this.keys.pop()
@@ -75,7 +74,6 @@ export default {
       })
     },
     selectCity (item) {
-      console.log(item)
       this.$router.push({name: 'address',params: {city:item.name}})
     },
     searchCity () {
