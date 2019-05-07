@@ -40,7 +40,8 @@ const router = new Router({
         },
        ]  
     },
-      {path:'/login',name:'login', component: () => import('./views/login.vue')}
+      {path:'/login',name:'login', component: () => import('./views/login.vue')},
+      {path:'/search',name:'search', component: () => import('./views/Search.vue')}
   ]
 })
 // 路由守卫
