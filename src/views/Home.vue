@@ -1,150 +1,158 @@
 <template>
   <div class="home">
-      <div class="header">
-        <div class="address_map" @click="$router.push({name:'address',params: {city: city}})">
-          <i class="fa fa-map-marker"></i>
-          <span>{{address}}</span>
-          <i class="fa fa-sort-desc"></i>
-        </div>
+    <div class="header">
+      <div class="address_map" @click="$router.push({name: 'address',params: {city: city}})">
+        <i class="fa fa-map-marker"></i>
+        <span>{{address}}</span>
+        <i class="fa fa-sort-desc"></i>
       </div>
-      <div class="search_wrap" :class="{'fixedview': showFilter}" @click="$router.push('/search')">
-        <div class="shop_search">
-          <i class="fa fa-search"></i>
-          搜索商家 商家名称
-        </div>
+    </div>
+    <div class="search_wrap" :class="{'fixedview':showFilter}" @click="$router.push('/search')">
+      <div class="shop_search">
+        <i class="fa fa-search"></i>
+        搜索商家 商家名称
       </div>
-      <div id="container">
-        <!-- 轮播 -->
-        <mt-swipe :auto="4000" class='swiper'>
-          <mt-swipe-item v-for="(img,index) in swipeImgs" :key="index">
-            <img :src="img" alt="">
-          </mt-swipe-item>
-        </mt-swipe>
-        <!-- 分类 -->
-         <mt-swipe :auto="0" class='entries' :show-indicators="false">
-          <mt-swipe-item v-for="(item,i) in entries" :key="i">
-            <div class="foodentry" v-for="(en,index) in item" :key="index">
-              <div class="img_wrap">
-                <img :src="en.image" alt="">
-              </div>
-              <span>{{en.name}}</span>
+    </div>
+    <div id="container">
+      <!-- 轮播 -->
+      <mt-swipe :auto="4000" class="swiper">
+        <mt-swipe-item v-for="(img,index) in swipeImgs" :key="index">
+          <img :src="img" alt>
+        </mt-swipe-item>
+      </mt-swipe>
+      <!-- 分类 -->
+      <mt-swipe :auto="0" class="entries">
+        <mt-swipe-item v-for="(entry,i) in entries" :key="i" class="entry_wrap">
+          <div class="foodentry" v-for="(item,index) in entry" :key="index">
+            <div class="img_wrap">
+              <img :src="item.image" alt>
             </div>
-          </mt-swipe-item>
-        </mt-swipe>
-        <!-- 推荐商家 -->
-        <div class="shoplist-title">推荐商家</div>
-        <!-- 筛查 -->
-        <FilterView :filterData="filterData" @searchFixed="showFilterView" @update="update"/>
-        <!-- 商家列表 -->
-        <mt-loadmore 
-        :top-method="loadData" 
-        :bottom-method="loadMore" 
-        :bottom-all-loaded="allLoaded" 
-        :bottomLoadingText="bottomLoadingText"
-        :auto-fill="false"
-        ref="loadmore">
-          <div class="sholist">
-            <IndexShop :restaurant= "item.restaurant" v-for="(item,index) in restaurants" :key="index"/>
+            <span>{{item.name}}</span>
           </div>
-        </mt-loadmore>
+        </mt-swipe-item>
+      </mt-swipe>
+    </div>
+    <!-- 推荐商家 -->
+    <div class="shoplist-title">推荐商家</div>
+
+    <!-- 导航 -->
+    <FilterView :filterData="filterData" @searchFixed="showFilterView" @update="update"/>
+
+    <!-- 商家信息 -->
+    <mt-loadmore
+      :top-method="loadData"
+      :bottom-method="loadMore"
+      :bottom-all-loaded="allLoaded"
+      :auto-fill="false"
+      :bottomPullText="bottomPullText"
+      ref="loadmore"
+    >
+      <div class="shoplist">
+        <IndexShop v-for="(item,index) in restaurants" :key="index" :restaurant="item.restaurant"/>
       </div>
+    </mt-loadmore>
   </div>
 </template>
 
 <script>
-import { Swipe, SwipeItem } from 'mint-ui'
-import { Loadmore } from 'mint-ui'
-import FilterView from '../components/FilterView'
-import IndexShop from '../components/indexShop'
+import { Swipe, SwipeItem, Loadmore } from "mint-ui";
+import FilterView from "../components/FilterView";
+import IndexShop from "../components/indexShop";
 export default {
-  name: 'home',
-  data () {
+  name: "home",
+  data() {
     return {
       swipeImgs: [],
       entries: [],
       filterData: null,
       showFilter: false,
-      size: 5,
       page: 1,
-      restaurants: [],
-      bottomLoadingText: "上拉加载更多",
+      size: 5,
+      restaurants: [], // 存放所有商家容器
       allLoaded: false,
+      bottomPullText: "上拉加载更多",
       data: null
-
+    };
+  },
+  computed: {
+    address() {
+      return this.$store.getters.address;
+    },
+    city() {
+      return (
+        this.$store.getters.location.addressComponent.city ||
+        this.$store.getters.location.addressComponent.province
+      );
+    }
+  },
+  created() {
+    this.getData();
+  },
+  methods: {
+    getData() {
+      this.$http("/api/profile/shopping").then(res => {
+        // console.log(res.data);
+        this.swipeImgs = res.data.swipeImgs;
+        this.entries = res.data.entries;
+      });
+      this.$http("/api/profile/filter").then(res => {
+        // console.log(res.data);
+        this.filterData = res.data;
+      });
+      this.loadData();
+    },
+    loadData() {
+      this.page = 1;
+      this.allLoaded = false;
+      this.bottomPullText = "上拉加载更多";
+      // 拉取商家信息
+      this.$http
+        .post(`/api/profile/restaurants/${this.page}/${this.size}`, this.data)
+        .then(res => {
+          console.log(res.data);
+          this.$refs.loadmore.onTopLoaded();
+          this.restaurants = res.data;
+        });
+    },
+    loadMore() {
+      if (!this.allLoaded) {
+        this.page++;
+        // 拉取商家信息
+        this.$http
+          .post(`/api/profile/restaurants/${this.page}/${this.size}`)
+          .then(res => {
+            //  加载完之后重新渲染
+            this.$refs.loadmore.onBottomLoaded();
+            if (res.data.length > 0) {
+              res.data.forEach(item => {
+                this.restaurants.push(item);
+              });
+              if (res.data < this.size) {
+                this.allLoaded = true;
+                this.bottomPullText = "没有更多了哦";
+              }
+            } else {
+              // 数据为空
+              this.allLoaded = true;
+              this.bottomPullText = "没有更多了哦";
+            }
+          });
+      }
+    },
+    showFilterView(isShow) {
+      this.showFilter = isShow;
+    },
+    update(condation) {
+      // console.log(condation);
+      this.data = condation;
+      this.loadData();
     }
   },
   components: {
     FilterView,
     IndexShop
-  },
-  created () {
-     this.getData();
-  },
-  methods: {
-    getData () {
-      this.$http('/api/profile/shopping').then(res => {
-        // console.log(res)
-        this.swipeImgs =  res.data.swipeImgs
-        this.entries = res.data.entries
-      })
-       this.$http('/api/profile/filter').then(res => {
-        // console.log(res)
-        this.filterData = res.data
-      })
-     this.loadData()
-    },
-    loadData () {
-      this.page = 1
-      this.allLoaded = false
-      this.bottomLoadingText = "上拉加载更多"
-       this.$http.post(`/api/profile/restaurants/${this.page}/${this.size}`,this.data)
-      .then(res =>{
-        // console.log(res)
-        this.restaurants = res.data
-        this.$refs.loadmore.onTopLoaded()
-      })
-    },
-    loadMore () {
-      if(!this.allLoaded) {
-        this.page++
-        this.$http.post(`/api/profile/restaurants/${this.page}/${this.size}`)
-        .then(res =>{
-          // console.log(res)
-          this.$refs.loadmore.onBottomLoaded();
-          if(res.data.length>0) {
-            res.data.forEach(element => {
-              this.restaurants.push(element)
-            });
-            if(res.data.length < this.size) {
-              this.allLoaded = true
-              this.bottomLoadingText = "没有更多了哦" 
-            }
-          }else {
-            this.allLoaded = true
-            this.bottomLoadingText = "没有更多了哦"
-          }
-        })
-      }
-    },
-    showFilterView (isShow) {
-      this.showFilter = isShow
-    },
-    update (condition) {
-      console.log(condition)
-      this.data = condition
-      this.loadData()
-    }
-  },
-  computed: {
-    address () {
-     return this.$store.getters.address;
-    },
-    city (){
-      return this.$store.getters.location.addressComponent.city||his.$store.getters.location.addressComponent.province
-    }
   }
-
-}
+};
 </script>
 
 <style scoped>

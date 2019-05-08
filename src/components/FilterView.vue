@@ -1,152 +1,172 @@
 <template>
-    <div :class="{'open': isSort || isScreen}" @click.self="hideView">
-        <div class="filter_wrap" v-if="filterData">
-            <div class="filter">
-                <div class="filter-nav"
-                  v-for="(item, index) in filterData.navTab"
-                  :key="index"
-                  :class="{'filter-bold':currentFilter ==index}"
-                  @click="FilterSort(index)"
-                >
-                  <span>{{item.name}}</span>
-                  <i :class="'fa fa-'+item.icon" v-if="item.icon"></i>
-                </div>
-            </div>
+  <div :class="{'open':isSort || isScreen}" @click.self="hideView">
+    <!-- 导航 -->
+    <div v-if="filterData" class="filter_wrap">
+      <aside class="filter">
+        <div
+          class="filter-nav"
+          v-for="(item,index) in filterData.navTab"
+          :key="index"
+          :class="{'filter-bold':currentFilter==index}"
+          @click="filterSort(index)"
+        >
+          <span>{{item.name}}</span>
+          <i v-if="item.icon" :class="'fa fa-'+item.icon"></i>
         </div>
-        <section class="filter-extend" v-if="isSort">
-            <ul>
-                <li v-for="(sort,index) in filterData.sortBy" :key="index" @click="selectSort(sort,index)">
-                    <span :class="{'selectName': currentSort==index}">{{sort.name}}</span>
-                    <i class="fa fa-check" v-show="currentSort==index"></i>
-                </li>
-            </ul>
-        </section>
-        <section class="filter-extend" v-if="isScreen">
-            <div class="filter-sort">
-                <div class="morefilter" v-for="(screen,index) in filterData.screenBy" :key="index">
-                    <p class="title">{{screen.title}}</p>
-                    <ul>
-                        <li v-for="(item,i) in screen.data" :key="i" :class="{'selected':item.select}" @click="selectScreen(screen,item)">
-                            <img v-if="item.icon" :src="item.icon" alt="">
-                            <span>{{item.name}}</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="morefilter-btn">
-               <span class="morefilter-clear" :class="{'edit': edit}" @click="clearFilter">清除</span>
-               <span class="morefilter-ok" @click="filterOk">确定</span>
-            </div>
-        </section>
+      </aside>
     </div>
+    <!-- 排序 -->
+    <section class="filter-extend" v-if="isSort">
+      <ul>
+        <li v-for="(item,index) in filterData.sortBy" :key="index" @click="selectSort(item,index)">
+          <span :class="{'selectName':currentSort == index}">{{item.name}}</span>
+          <i v-show="currentSort == index" class="fa fa-check"></i>
+        </li>
+      </ul>
+    </section>
+    <!-- 筛选 -->
+    <section class="filter-extend" v-if="isScreen">
+      <div class="filter-sort">
+        <div v-for="(screen,index) in filterData.screenBy" :key="index" class="morefilter">
+          <p class="title">{{screen.title}}</p>
+          <ul>
+            <li
+              v-for="(item,i) in screen.data"
+              :key="i"
+              :class="{'selected':item.select}"
+              @click="selectScreen(item,screen)"
+            >
+              <img v-if="item.icon" :src="item.icon" alt>
+              <span>{{item.name}}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="morefilter-btn">
+        <span @click="clearFilter" :class="{'edit':edit}" class="morefilter-clear">清空</span>
+        <span @click="filterOk" class="morefilter-ok">确定</span>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script>
 export default {
   name: "FilterView",
-  data () {
-      return {
-        currentFilter: 0,
-        isSort: false,
-        isScreen: false,
-        currentSort: 0
-      }
-  },
-  props: {
-      filterData: Object
-  },
-  methods: {
-      FilterSort (index) {
-          this.currentFilter = index
-          switch(index) {
-              case 0:
-              this.isSort = true
-              this.$emit('searchFixed', true)
-              break
-              case 1:
-              this.hideView()
-              this.$emit('update',{condition:this.filterData.navTab[1].condition})
-               break
-              case 2:
-              this.hideView()
-              this.$emit('update',{condition:this.filterData.navTab[2].condition})
-               break
-              case 3:
-              this.isSort = false
-              this.isScreen = true
-              this.$emit('searchFixed', true)
-              break;
-              default:
-              this.hideView()
-              break
-          }
-      },
-      selectSort (item,index){
-        //   console.log(item)
-          this.currentSort = index
-          this.filterData.navTab[0].name = item.name
-          this.hideView()
-        //   请求排序
-          this.$emit('update',{condition:item.code})
-      },
-      selectScreen (screen,item) {
-        //   console.log(screen)
-          if(screen.id !== 'MPI') {
-             screen.data.forEach(el => {
-                 el.select = false
-             })
-          }
-          item.select = !item.select
-      },
-      clearFilter () {
-        this.filterData.screenBy.forEach(item => {
-            item.data.forEach(screen => {
-                screen.select = false
-            })
-        })
-      },
-      filterOk () {
-          let screenData = {
-              MPI: '',
-              offer: '',
-              per: ''
-          }
-          let mpiStr = ''
-          this.filterData.screenBy.forEach(screen => {
-            screen.data.forEach((item, index) => {
-                if(item.select){
-                    if(screen.id !=='MPI' ) {
-                        screenData[screen.id] = item.code
-                    } else {
-                        mpiStr += item.code + ','
-                        screenData[screen.id] = mpiStr
-                    }   
-                }
-            })
-          })
-          this.$emit('update',{condition:screenData})
-          this.hideView()
-      },
-      hideView () {
-          this.isSort = false
-          this.isScreen = false
-          this.$emit('searchFixed', false)
-      }
+  data() {
+    return {
+      currentFilter: 0,
+      isSort: false,
+      currentSort: 0,
+      isScreen: false
+    };
   },
   computed: {
-      edit () {
-          let edit = false
-          this.filterData.screenBy.forEach(item => {
-              item.data.forEach(screen => {
-                  if(screen.select) {
-                      edit = true
-                  }
-              })
-          })
-          return edit
+    edit() {
+      let edit = false;
+      this.filterData.screenBy.forEach(screen => {
+        screen.data.forEach(item => {
+          if (item.select) {
+            edit = true;
+          }
+        });
+      });
+      return edit;
+    }
+  },
+  props: {
+    filterData: Object
+  },
+  methods: {
+    filterSort(index) {
+      this.currentFilter = index;
+      switch (index) {
+        case 0:
+          this.isSort = true;
+          this.$emit("searchFixed", true);
+          break;
+        case 1:
+          this.$emit("update", {
+            condition: this.filterData.navTab[1].condition
+          });
+          this.hideView();
+          break;
+        case 2:
+          this.$emit("update", {
+            condition: this.filterData.navTab[2].condition
+          });
+          this.hideView();
+          break;
+        case 3:
+          this.isScreen = true;
+          this.isSort = false;
+          this.$emit("searchFixed", true);
+
+          break;
+        default:
+          this.hideView();
+          break;
       }
+    },
+    hideView() {
+      this.isSort = false;
+      this.isScreen = false;
+      this.$emit("searchFixed", false);
+    },
+    selectSort(item, index) {
+      this.currentSort = index;
+      this.filterData.navTab[0].name = this.filterData.sortBy[index].name;
+      this.hideView();
+
+      // 更新数据
+      this.$emit("update", { condition: item.code });
+    },
+    selectScreen(item, screen) {
+      if (screen.id !== "MPI") {
+        // 单选
+        screen.data.forEach(ele => {
+          ele.select = false;
+        });
+      }
+      item.select = !item.select;
+    },
+    clearFilter() {
+      this.filterData.screenBy.forEach(screen => {
+        screen.data.forEach(item => {
+          item.select = false;
+        });
+      });
+    },
+    filterOk() {
+      let screenData = {
+        MPI: "",
+        offer: "",
+        per: ""
+      };
+      let mpiStr = "";
+      this.filterData.screenBy.forEach(screen => {
+        screen.data.forEach((item, index) => {
+          if (item.select) {
+            // 两种情况 1.多选 2.单选
+            if (screen.id !== "MPI") {
+              // 单选
+              screenData[screen.id] = item.code;
+            } else {
+              // 多选 fengniao,pinpai
+              mpiStr += item.code + ",";
+              screenData[screen.id] = mpiStr;
+            }
+          }
+        });
+      });
+
+      // console.log(mpiStr);
+      this.$emit("update", { condition: screenData });
+
+      this.hideView();
+    }
   }
-}
+};
 </script>
 
 <style scoped>
