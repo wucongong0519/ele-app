@@ -27,19 +27,22 @@
                 <span>蜂鸟专送约{{showInfo.rst.order_lead_time}}分钟</span>
             </div>
              <!-- 优惠信息 -->
+             <Activity :activities="showInfo.rst.activities"/>
              <!-- 公告 -->
-             <p class="promotion">公告：{{showInfo.rst.promotion_info}}</p>
+             <p class="rst-promotion">公告：{{showInfo.rst.promotion_info}}</p>
              <!-- 导航 -->
-             <Navbar/>
-             <!-- 容器 -->
-             <router-view></router-view>
+            
         </div>
+        <Navbar/>
+        <!-- 容器 -->
+        <router-view></router-view>
     </div>
 </template>
 
 <script>
 import Navbar from "../../components/shop/Navbar"
 import InfoModel from '../../components/shop/InfoModel'
+import Activity from '../../components/shop/Activity'
 export default {
    name: 'Shop',
    data () {
@@ -50,7 +53,8 @@ export default {
    },
    components: {
       Navbar, 
-      InfoModel
+      InfoModel,
+      Activity
    },
    created () {
        this.getData()
@@ -58,7 +62,7 @@ export default {
    methods: {
        getData () {
            this.$http('/api/profile/batch_shop').then(res => {
-               console.log(res)
+              //  console.log(res)
                this.showInfo = res.data
            })
        },

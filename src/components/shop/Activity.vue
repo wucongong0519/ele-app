@@ -1,23 +1,23 @@
 <template>
     <div class="rst-activity">
-        <div class="activity-text">
+        <div class="activity-txt">
             <span :style="{background: '#' + activities[0].icon_color}" >{{activities[0].icon_name}}</span>
             <span>{{activities[0].description}}</span>
         </div>
         <div class="activity-count" @click="showSheet=true">
-            <span>{{activities.length}}个优惠活动</span>
+            <span>{{activities.length}}个优惠</span>
             <i class="fa fa-caret-down"></i>
         </div>
         <!-- 弹窗 -->
-        <transition>
+        <transition name="fade">
             <div class="act-model" v-show="showSheet">
                 <div class="activity-sheet">
-                    <i class="fa fa-remove" @click="shoSheet=false"></i>
+                    <i class="fa fa-remove" @click="showSheet=false"></i>
                     <h2>优惠活动</h2>
                     <ul>
                         <li v-for="(item,index) in activities" :key="index">
-                            <span>{{activities.icon_name}}</span>
-                            <span>{{activities.description}}</span>
+                           <span :style="{background: '#' + item.icon_color}" >{{item.icon_name}}</span>
+                           <span>{{item.description}}</span>
                         </li>
                     </ul>
                 </div>
